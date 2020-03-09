@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 from sklearn.model_selection import GridSearchCV, KFold
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+
 # from sklearn.linear_model import LogisticRegression
 # from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -12,17 +13,19 @@ import seaborn as sns
 
 class TrainedModel:
     def __init__(self, dataset):
-        self.beta = 1
+        self.beta = 0.2
         self.cv = KFold(5, shuffle=False)
-        # self.basemodel = DecisionTreeClassifier()
-        self.basemodel = RandomForestClassifier(n_estimators=20, criterion="entropy")
         self.target = "top_category_1501"
         self.important_target_class = "executive_time"
         self.features = ["top_category_0901", "top_category_1101", "top_category_1301"]
         self.labelencoder = LabelEncoder()
         self.onehotencoder = OneHotEncoder(handle_unknown="ignore")
         self.fit_encoders(dataset)
-        self.param_space = {"max_depth": [3, 6, 9, 20, 50]}
+        self.basemodel = RandomForestClassifier(
+            n_estimators=20, criterion="entropy", class_weight="balanced_subsample"
+        )
+        # self.basemodel = DecisionTreeClassifier()
+        self.param_space = {"max_depth": [2, 3, 5, 6, 9]}
         self.model = self.basemodel
         self.best_params = dict()
         self.optimize_params(dataset)
@@ -106,4 +109,3 @@ class TrainedModel:
         cm_df.index.name = "Actual"
         cm_df.columns.name = "Predicted"
         sns.heatmap(cm_df, annot=True)
-        plt.show()
